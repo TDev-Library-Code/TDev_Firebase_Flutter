@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:tdev_flutter_firebase/src/realtime_database/dto.dart';
+import 'package:tdev_flutter_firebase/src/realtime_database/node.dart';
 import 'package:tdev_flutter_firebase/src/realtime_database/error.dart';
 
 class RealtimeService {
