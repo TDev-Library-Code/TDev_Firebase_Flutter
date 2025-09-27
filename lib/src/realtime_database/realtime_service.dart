@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tdev_flutter_firebase/src/realtime_database/dto.dart';
 import 'package:tdev_flutter_firebase/src/realtime_database/error.dart';
 
 class RealtimeService {
@@ -35,7 +36,14 @@ class RealtimeService {
   }
 
   // Set Data ==================================================================
-  /// Ghi đè dữ liệu tại [path].
+  /// Ghi đè dữ liệu tại [path]. Thường dùng cho trường hợp ghi đè một object.
+  ///
+  /// ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ///
+  /// Note: `node` sẽ bị `xóa tất cả` và ghi lại hoàn toàn vì vậy các `node` đã có trong
+  /// firebase nhưng `không có` trong [data] sẽ bị mất.
+  ///
+  /// +++++++++++++++++++++++++++++++++++++++++++++++++++++
   ///
   /// ```dart
   /// await RealtimeService.setData("users/123", {"name": "Mày", "age": 20});
@@ -49,10 +57,15 @@ class RealtimeService {
   }
 
   // Push Data =================================================================
-  /// Thêm mới dữ liệu với id tự sinh tại [path].
+  /// Thêm mới dữ liệu với id tự sinh tại [path]. Thường dùng cho trường hợp thêm
+  /// dữ liệu mới vào một danh sách.
   ///
-  /// Trả về `key` vừa được Firebase tạo.
+  /// Dữ liệu được thêm vào danh sách với `node id` tự sinh (kiểu `-Nabcd1234`).
+  /// ++++++++++++++++++++++++++++++++++++++++++++++++++++
   ///
+  /// Node: lưu lại `id` trả về để có thể sửa/xoá sau này.
+  ///
+  ///++++++++++++++++++++++++++++++++++++++++++++++++++++
   /// ```dart
   /// final id = await RealtimeService.pushData("users", {"name": "Tèo", "age": 25});
   /// print(id); // vd: "-Nabcd1234"
@@ -69,6 +82,14 @@ class RealtimeService {
 
   // Update Data ===============================================================
   /// Cập nhật một phần dữ liệu tại [path].
+  /// Thường dùng cho trường hợp cập nhật một vài trường của object.
+  ///
+  /// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ///
+  /// Note: Nó sẽ tạo thêm các `node` có trong `data` nếu `chưa có` và `không xoá` các `node`
+  /// con khác `không có` trong `data`.
+  ///
+  /// +++++++++++++++++++++++++++++++++++++++++++++++++++++
   ///
   /// ```dart
   /// await RealtimeService.updateData("users/123", {"age": 30});
@@ -84,6 +105,11 @@ class RealtimeService {
   // Delete Data ===============================================================
   /// Xoá node tại [path].
   ///
+  /// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ///
+  /// Note: Nhớ xóa đúng `node` cần thiết tránh xóa `node` cha gây mất dữ liệu.
+  ///
+  /// +++++++++++++++++++++++++++++++++++++++++++++++++++++
   /// ```dart
   /// await RealtimeService.deleteData("users/123");
   /// ```
@@ -104,19 +130,22 @@ class RealtimeService {
   /// final user = await RealtimeService.getData("users/123");
   /// print(user); // { "name": "Mày", "age": 20 }
   /// ```
-  static Future<dynamic> getData(String path) async {
+  static Future<Node> getData(String path) async {
     try {
       final snapshot = await _safeDb.child(path).get();
-      return snapshot.exists ? snapshot.value : null;
+      return Node(
+          key: snapshot.key ?? '',
+          value: snapshot.value
+      );
     } catch (e) {
       throw RealtimeException("Không thể getData tại path: $path", e);
     }
   }
 
   //  Get List =================================================================
-  /// Lấy danh sách dữ liệu tại [path].
+  /// Lấy danh sách dữ liệu tại [path]. Dùng khi dữ liệu `node` là một `list`
   ///
-  /// Chỉ nên dùng khi node đó chứa nhiều object con (kiểu Map của Map).
+  ///
   /// Trả về `List<Map<String, dynamic>>`.
   ///
   /// ```dart
@@ -127,7 +156,7 @@ class RealtimeService {
   /// //   { "name": "B", "age": 25 }
   /// // ]
   /// ```
-  static Future<List<Map<String, dynamic>>> getList(String path) async {
+  static Future<List<Node>> getList(String path) async {
     try {
       final snapshot = await _safeDb.child(path).get();
       if (!snapshot.exists) return [];
@@ -137,7 +166,10 @@ class RealtimeService {
       }
 
       final data = snapshot.value as Map<dynamic, dynamic>;
-      return data.values.map((e) => Map<String, dynamic>.from(e)).toList();
+      return data.entries.map((e) => Node(
+        key: e.key ?? '',
+        value: e.value,
+      )).toList();
     } catch (e) {
       throw RealtimeException("Không thể getList tại path: $path", e);
     }
