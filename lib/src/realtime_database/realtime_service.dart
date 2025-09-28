@@ -113,7 +113,7 @@ class RealtimeService {
   /// ```dart
   /// await RealtimeService.deleteData("users/123");
   /// ```
-  static Future<void> deleteData(String path) async {
+  static Future<void> delete(String path) async {
     try {
       await _safeDb.child(path).remove();
     } catch (e) {
@@ -121,7 +121,7 @@ class RealtimeService {
     }
   }
 
-  //  Get Data ==================================================================
+  //  Get Data =================================================================
   /// Lấy dữ liệu một lần tại [path].
   ///
   /// Trả về giá trị raw (có thể là `Map`, `List`, `String`, ...).
