@@ -48,7 +48,7 @@ class RealtimeService {
   /// ```dart
   /// await RealtimeService.setData("users/123", {"name": "Mày", "age": 20});
   /// ```
-  static Future<void> setData(String path, Map<String, dynamic> data) async {
+  static Future<void> set(String path, Map<String, dynamic> data) async {
     try {
       await _safeDb.child(path).set(data);
     } catch (e) {
@@ -70,7 +70,7 @@ class RealtimeService {
   /// final id = await RealtimeService.pushData("users", {"name": "Tèo", "age": 25});
   /// print(id); // vd: "-Nabcd1234"
   /// ```
-  static Future<String> pushData(String path, Map<String, dynamic> data) async {
+  static Future<String> push(String path, Map<String, dynamic> data) async {
     try {
       final newRef = _safeDb.child(path).push();
       await newRef.set(data);
@@ -94,7 +94,7 @@ class RealtimeService {
   /// ```dart
   /// await RealtimeService.updateData("users/123", {"age": 30});
   /// ```
-  static Future<void> updateData(String path, Map<String, dynamic> data) async {
+  static Future<void> update(String path, Map<String, dynamic> data) async {
     try {
       await _safeDb.child(path).update(data);
     } catch (e) {
@@ -130,7 +130,7 @@ class RealtimeService {
   /// final user = await RealtimeService.getData("users/123");
   /// print(user); // { "name": "Mày", "age": 20 }
   /// ```
-  static Future<Node> getData(String path) async {
+  static Future<Node> getNode(String path) async {
     try {
       final snapshot = await _safeDb.child(path).get();
       return Node(
@@ -156,7 +156,7 @@ class RealtimeService {
   /// //   { "name": "B", "age": 25 }
   /// // ]
   /// ```
-  static Future<List<Node>> getList(String path) async {
+  static Future<List<Node>> getListNode(String path) async {
     try {
       final snapshot = await _safeDb.child(path).get();
       if (!snapshot.exists) return [];
@@ -185,7 +185,7 @@ class RealtimeService {
   ///   print("Có thay đổi: $data");
   /// });
   /// ```
-  static Stream<Node> listen(String path) {
+  static Stream<Node> streamNode(String path) {
     try {
       return _safeDb.child(path).onValue.map((event) => Node(key: event.snapshot.key, value: event.snapshot.value));
     } catch (e) {
@@ -219,7 +219,7 @@ class RealtimeService {
   ///   sub.cancel();
   /// }
   /// ```
-  static List<StreamSubscription> onStreamEvent(
+  static List<StreamSubscription> streamNodeEvent(
       String path, {
         void Function(Node snapshot)? onAdded,
         void Function(Node snapshot)? onChanged,
