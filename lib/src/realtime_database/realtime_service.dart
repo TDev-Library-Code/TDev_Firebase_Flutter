@@ -48,7 +48,7 @@ class RealtimeService {
   /// ```dart
   /// await RealtimeService.setData("users/123", {"name": "Mày", "age": 20});
   /// ```
-  static Future<void> set(String path, Map<String, dynamic> data) async {
+  static Future<void> set(String path, Object? data) async {
     try {
       await _safeDb.child(path).set(data);
     } catch (e) {
@@ -70,7 +70,7 @@ class RealtimeService {
   /// final id = await RealtimeService.pushData("users", {"name": "Tèo", "age": 25});
   /// print(id); // vd: "-Nabcd1234"
   /// ```
-  static Future<String> push(String path, Map<String, dynamic> data) async {
+  static Future<String> push(String path, Object? data) async {
     try {
       final newRef = _safeDb.child(path).push();
       await newRef.set(data);
@@ -94,7 +94,7 @@ class RealtimeService {
   /// ```dart
   /// await RealtimeService.updateData("users/123", {"age": 30});
   /// ```
-  static Future<void> update(String path, Map<String, dynamic> data) async {
+  static Future<void> update(String path, Map<String, Object?> data) async {
     try {
       await _safeDb.child(path).update(data);
     } catch (e) {
