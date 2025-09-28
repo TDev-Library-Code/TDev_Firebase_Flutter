@@ -134,7 +134,7 @@ class RealtimeService {
     try {
       final snapshot = await _safeDb.child(path).get();
       return Node(
-          key: snapshot.key ?? '',
+          key: snapshot.key,
           value: snapshot.value
       );
     } catch (e) {
@@ -167,7 +167,7 @@ class RealtimeService {
 
       final data = snapshot.value as Map<dynamic, dynamic>;
       return data.entries.map((e) => Node(
-        key: e.key ?? '',
+        key: e.key,
         value: e.value,
       )).toList();
     } catch (e) {
@@ -185,9 +185,9 @@ class RealtimeService {
   ///   print("Có thay đổi: $data");
   /// });
   /// ```
-  static Stream<dynamic> listen(String path) {
+  static Stream<Node> listen(String path) {
     try {
-      return _safeDb.child(path).onValue.map((event) => event.snapshot.value);
+      return _safeDb.child(path).onValue.map((event) => Node(key: event.snapshot.key, value: event.snapshot.value));
     } catch (e) {
       throw RealtimeException("Không thể listen tại path: $path", e);
     }
@@ -219,24 +219,23 @@ class RealtimeService {
   ///   sub.cancel();
   /// }
   /// ```
-
   static List<StreamSubscription> onStreamEvent(
       String path, {
-        void Function(DataSnapshot snapshot)? onAdded,
-        void Function(DataSnapshot snapshot)? onChanged,
-        void Function(DataSnapshot snapshot)? onRemoved,
+        void Function(Node snapshot)? onAdded,
+        void Function(Node snapshot)? onChanged,
+        void Function(Node snapshot)? onRemoved,
       }) {
     final ref = _safeDb.child(path);
     final subs = <StreamSubscription>[];
 
     if (onAdded != null) {
-      subs.add(ref.onChildAdded.listen((event) => onAdded(event.snapshot)));
+      subs.add(ref.onChildAdded.listen((event) => onAdded(Node(key: event.snapshot.key, value: event.snapshot.value))));
     }
     if (onChanged != null) {
-      subs.add(ref.onChildChanged.listen((event) => onChanged(event.snapshot)));
+      subs.add(ref.onChildChanged.listen((event) => onChanged(Node(key: event.snapshot.key, value: event.snapshot.value))));
     }
     if (onRemoved != null) {
-      subs.add(ref.onChildRemoved.listen((event) => onRemoved(event.snapshot)));
+      subs.add(ref.onChildRemoved.listen((event) => onRemoved(Node(key: event.snapshot.key, value: event.snapshot.value))));
     }
 
     return subs;

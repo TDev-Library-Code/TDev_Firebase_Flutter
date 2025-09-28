@@ -1,5 +1,5 @@
 class Node {
-  final String key;
+  final String? key;
   final Object? value;
 
   Node({
