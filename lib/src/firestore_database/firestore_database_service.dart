@@ -149,7 +149,6 @@ class FirestoreService {
     try {
       return _safeDb.collection(collectionPath).doc(documentId).snapshots().map((snapshot) {
         if (!snapshot.exists) return null;
-        // Chuyển đổi từ DocumentSnapshot sang FirestoreDocument
         return FirestoreDocument(id: snapshot.id, data: snapshot.data());
       });
     } catch (e) {
