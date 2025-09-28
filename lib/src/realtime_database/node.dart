@@ -19,4 +19,13 @@ class Node {
       "value": value,
     };
   }
+
+  @override
+  String toString() {
+    return 'Node'
+        '\n{'
+        '\nkey: $key,'
+        '\nvalue: $value'
+        '\n}';
+  }
 }
