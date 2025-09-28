@@ -176,13 +176,11 @@ class RealtimeService {
   }
 
   // Stream - Listen ===========================================================
-  /// Lắng nghe thay đổi realtime tại [path].
-  ///
-  /// Trả về `Stream<dynamic>`, mỗi lần data thay đổi thì emit giá trị mới.
+  /// Lắng nghe `node` thay đổi realtime tại [path].
   ///
   /// ```dart
-  /// RealtimeService.listen("users").listen((data) {
-  ///   print("Có thay đổi: $data");
+  /// RealtimeService.listen("users").listen((node) {
+  ///   print("Có thay đổi: node");
   /// });
   /// ```
   static Stream<Node> streamNode(String path) {
@@ -201,15 +199,15 @@ class RealtimeService {
   /// ngừng lắng nghe.
   ///
   /// ```dart
-  /// final subs = RealtimeService.onStreamEvent(
+  /// final subs = RealtimeService.streamNodeEvent(
   ///   "users",
-  ///   onAdded: (snapshot) {
+  ///   onAdded: (node) {
   ///     print("Child mới: ${snapshot.value}");
   ///   },
-  ///   onChanged: (snapshot) {
+  ///   onChanged: (node) {
   ///     print("Child thay đổi: ${snapshot.value}");
   ///   },
-  ///   onRemoved: (snapshot) {
+  ///   onRemoved: (node) {
   ///     print("Child bị xoá: ${snapshot.key}");
   ///   },
   /// );
@@ -221,9 +219,9 @@ class RealtimeService {
   /// ```
   static List<StreamSubscription> streamNodeEvent(
       String path, {
-        void Function(Node snapshot)? onAdded,
-        void Function(Node snapshot)? onChanged,
-        void Function(Node snapshot)? onRemoved,
+        void Function(Node node)? onAdded,
+        void Function(Node node)? onChanged,
+        void Function(Node node)? onRemoved,
       }) {
     final ref = _safeDb.child(path);
     final subs = <StreamSubscription>[];

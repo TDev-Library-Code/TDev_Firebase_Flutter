@@ -1,27 +1,8 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-
-class FirestoreNode {
-  final String? id;
-  final Object? data;
-
-  FirestoreNode({this.id, this.data});
-
-  @override
-  String toString() => 'FirestoreNode(id: $id, data: $data)';
-}
-
-class FirestoreException implements Exception {
-  final String message;
-  final dynamic error;
-  FirestoreException(this.message, [this.error]);
-
-  @override
-  String toString() => 'FirestoreException: $message ${error ?? ''}';
-}
-
-// =================================================================
+import 'package:tdev_flutter_firebase/src/firestore_database/dto.dart';
+import 'package:tdev_flutter_firebase/src/firestore_database/error.dart';
 
 class FirestoreService {
   static FirebaseFirestore? _db;
@@ -117,18 +98,14 @@ class FirestoreService {
   // Get Document ==============================================================
   /// Lấy dữ liệu một lần của Document tại [collectionPath]/[documentId].
   ///
-  /// Trả về một đối tượng `FirestoreNode`.
-  ///
-  /// ```dart
-  /// final userNode = await FirestoreService.getDocument("users", "user_123");
-  /// print(userNode?.data); // { "name": "An", "age": 35, ... }
-  /// ```
-  static Future<FirestoreNode?> getDocument(String collectionPath, String documentId) async {
+  /// Trả về một đối tượng `FirestoreDocument?`.
+  static Future<FirestoreDocument?> getDocument(String collectionPath, String documentId) async {
     try {
       final snapshot = await _safeDb.collection(collectionPath).doc(documentId).get();
       if (!snapshot.exists) return null;
 
-      return FirestoreNode(
+      // Chuyển đổi từ DocumentSnapshot sang FirestoreDocument
+      return FirestoreDocument(
         id: snapshot.id,
         data: snapshot.data(),
       );
@@ -140,15 +117,8 @@ class FirestoreService {
   // Get Collection/List =======================================================
   /// Lấy tất cả Document trong Collection tại [collectionPath] một lần.
   ///
-  /// Có thể áp dụng [queryBuilder] để thêm các điều kiện lọc, sắp xếp.
-  /// Trả về `List<FirestoreNode>`.
-  ///
-  /// ```dart
-  /// final activeUsers = await FirestoreService.getCollection("users",
-  ///   queryBuilder: (query) => query.where("status", isEqualTo: "active").limit(10)
-  /// );
-  /// ```
-  static Future<List<FirestoreNode>> getCollection(
+  /// Trả về `List<FirestoreDocument>`.
+  static Future<List<FirestoreDocument>> getCollection(
       String collectionPath, {
         Query Function(Query query)? queryBuilder,
       }) async {
@@ -160,7 +130,7 @@ class FirestoreService {
 
       final snapshot = await query.get();
 
-      return snapshot.docs.map((doc) => FirestoreNode(
+      return snapshot.docs.map((doc) => FirestoreDocument(
         id: doc.id,
         data: doc.data(),
       )).toList();
@@ -172,18 +142,13 @@ class FirestoreService {
   // Stream Document - Listen ==================================================
   /// Lắng nghe thay đổi realtime của một Document tại [collectionPath]/[documentId].
   ///
-  /// Trả về `Stream<FirestoreNode?>`, emit giá trị mới mỗi khi data thay đổi.
-  ///
-  /// ```dart
-  /// FirestoreService.streamDocument("users", "user_123").listen((node) {
-  ///   print("User data thay đổi: ${node?.data}");
-  /// });
-  /// ```
-  static Stream<FirestoreNode?> streamDocument(String collectionPath, String documentId) {
+  /// Trả về `Stream<FirestoreDocument?>`.
+  static Stream<FirestoreDocument?> streamDocument(String collectionPath, String documentId) {
     try {
       return _safeDb.collection(collectionPath).doc(documentId).snapshots().map((snapshot) {
         if (!snapshot.exists) return null;
-        return FirestoreNode(id: snapshot.id, data: snapshot.data());
+        // Chuyển đổi từ DocumentSnapshot sang FirestoreDocument
+        return FirestoreDocument(id: snapshot.id, data: snapshot.data());
       });
     } catch (e) {
       throw FirestoreException("Không thể stream Document tại: $collectionPath/$documentId", e);
@@ -193,15 +158,8 @@ class FirestoreService {
   // Stream Collection - Listen List ===========================================
   /// Lắng nghe thay đổi realtime của Collection tại [collectionPath].
   ///
-  /// Có thể áp dụng [queryBuilder] để thêm các điều kiện lọc, sắp xếp.
-  /// Trả về `Stream<List<FirestoreNode>>`.
-  ///
-  /// ```dart
-  /// FirestoreService.streamCollection("users").listen((list) {
-  ///   print("Danh sách user thay đổi: ${list.length}");
-  /// });
-  /// ```
-  static Stream<List<FirestoreNode>> streamCollection(
+  /// Trả về `Stream<List<FirestoreDocument>>`.
+  static Stream<List<FirestoreDocument>> streamCollection(
       String collectionPath, {
         Query Function(Query query)? queryBuilder,
       }) {
@@ -212,7 +170,7 @@ class FirestoreService {
       }
 
       return query.snapshots().map((snapshot) {
-        return snapshot.docs.map((doc) => FirestoreNode(
+        return snapshot.docs.map((doc) => FirestoreDocument(
           id: doc.id,
           data: doc.data(),
         )).toList();
