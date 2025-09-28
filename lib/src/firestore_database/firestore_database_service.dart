@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:tdev_flutter_firebase/src/firestore_database/dto.dart';
 import 'package:tdev_flutter_firebase/src/firestore_database/error.dart';
 
+typedef QueryBuilder = Query Function(Query query);
+
 class FirestoreService {
   static FirebaseFirestore? _db;
 
@@ -120,7 +122,7 @@ class FirestoreService {
   /// Trả về `List<FirestoreDocument>`.
   static Future<List<FirestoreDocument>> getCollection(
       String collectionPath, {
-        Query Function(Query query)? queryBuilder,
+        QueryBuilder? queryBuilder,
       }) async {
     try {
       Query query = _safeDb.collection(collectionPath);
@@ -161,7 +163,7 @@ class FirestoreService {
   /// Trả về `Stream<List<FirestoreDocument>>`.
   static Stream<List<FirestoreDocument>> streamCollection(
       String collectionPath, {
-        Query Function(Query query)? queryBuilder,
+        QueryBuilder? queryBuilder,
       }) {
     try {
       Query query = _safeDb.collection(collectionPath);
